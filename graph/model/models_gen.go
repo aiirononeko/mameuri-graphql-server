@@ -2,19 +2,55 @@
 
 package model
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+import (
+	"fmt"
+	"io"
+	"strconv"
+)
+
+type BusinessUser struct {
+	ID       string `json:"id"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type OrderBy string
+
+const (
+	OrderByCreatedAtAsc  OrderBy = "createdAt_ASC"
+	OrderByCreatedAtDesc OrderBy = "createdAt_DESC"
+)
+
+var AllOrderBy = []OrderBy{
+	OrderByCreatedAtAsc,
+	OrderByCreatedAtDesc,
 }
 
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+func (e OrderBy) IsValid() bool {
+	switch e {
+	case OrderByCreatedAtAsc, OrderByCreatedAtDesc:
+		return true
+	}
+	return false
+}
+
+func (e OrderBy) String() string {
+	return string(e)
+}
+
+func (e *OrderBy) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = OrderBy(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid OrderBy", str)
+	}
+	return nil
+}
+
+func (e OrderBy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
