@@ -1,0 +1,44 @@
+{
+  "name": "mameuri-graphql-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --watch './src/**/*.ts' --exec ts-node --files ./src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "check-types": "tsc --noEmit",
+    "lint": "run-p -l -c --aggregate-output lint:*",
+    "lint:eslint": "eslint src/**/*.ts",
+    "lint:prettier": "prettier --check .",
+    "fix": "run-s -l -c fix:eslint fix:prettier",
+    "fix:eslint": "eslint --fix src/**/*.ts",
+    "fix:prettier": "prettier --write ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/aiirononeko/mameuri-graphql-server.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aiirononeko/mameuri-graphql-server/issues"
+  },
+  "homepage": "https://github.com/aiirononeko/mameuri-graphql-server#readme",
+  "devDependencies": {
+    "@types/node": "^18.11.9",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "@typescript-eslint/parser": "^5.43.0",
+    "eslint": "^8.28.0",
+    "eslint-config-prettier": "^8.5.0",
+    "nodemon": "^2.0.20",
+    "prettier": "^2.7.1",
+    "prisma": "^4.6.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^4.6.1"
+  }
+}
