@@ -27,11 +27,13 @@
   },
   "homepage": "https://github.com/aiirononeko/mameuri-graphql-server#readme",
   "devDependencies": {
+    "@types/express": "^4.17.14",
     "@types/node": "^18.11.9",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
     "@typescript-eslint/parser": "^5.43.0",
     "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.5.0",
+    "express-graphql": "^0.12.0",
     "nodemon": "^2.0.20",
     "prettier": "^2.7.1",
     "prisma": "^4.6.1",
@@ -39,6 +41,15 @@
     "typescript": "^4.9.3"
   },
   "dependencies": {
-    "@prisma/client": "^4.6.1"
+    "@prisma/client": "^4.6.1",
+    "class-validator": "^0.13.2",
+    "express": "^4.18.2",
+    "graphql": "^15.8.0",
+    "reflect-metadata": "^0.1.13",
+    "type-graphql": "^1.1.1",
+    "typegraphql-prisma": "^0.22.2"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }

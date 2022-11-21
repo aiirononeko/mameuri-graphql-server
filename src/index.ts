@@ -1,16 +1,7 @@
-import { PrismaClient } from '@prisma/client'
+import app from './app'
 
-const prisma = new PrismaClient()
+const PORT = process.env.PORT || 9000
 
-async function main() {
-  const allBusinessUsers = await prisma.businessUser.findMany()
-  console.log(allBusinessUsers)
-}
-
-main()
-  .catch((e) => {
-    throw e
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+app.listen(PORT, () => {
+  console.log(`GraphQL server ready ad: http://localhost:${PORT}`)
+})

@@ -15,3 +15,12 @@ model BusinessUser {
   name  String
   email String @unique
 }
+
+generator gen {
+  provider = "prisma-client-js"
+}
+
+generator typegraphql {
+  provider = "typegraphql-prisma"
+  output   = "../src/generated/typegraphql-prisma"
+}

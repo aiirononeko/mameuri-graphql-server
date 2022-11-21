@@ -6,5 +6,9 @@
     "baseUrl": "./src"
   },
   "include": ["src/**/*.ts", "src/**/*.js"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "emitDecoratorMetadata": true,
+  "experimentalDecorators": true,
+  "target": "es2018", // or newer if your node.js version supports this
+  "lib": ["es2018", "esnext.asynciterable"]
 }
