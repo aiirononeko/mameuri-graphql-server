@@ -1,1 +1,0 @@
-export { BusinessUser } from "./BusinessUser";
