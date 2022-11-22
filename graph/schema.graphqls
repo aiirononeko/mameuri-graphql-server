@@ -16,6 +16,7 @@ type User {
 
 type Query {
   todos: [Todo!]!
+  businessUsers: [BusinessUser!]!
 }
 
 input NewTodo {
@@ -25,4 +26,16 @@ input NewTodo {
 
 type Mutation {
   createTodo(input: NewTodo!): Todo!
+  createBusinessUser(input: newBusinessUsers!): BusinessUser!
+}
+
+type BusinessUser {
+  id: ID!
+  email: String!
+  password: String!
+}
+
+input newBusinessUsers {
+  email: String!
+  password: String!
 }
