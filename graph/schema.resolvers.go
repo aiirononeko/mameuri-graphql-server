@@ -9,7 +9,6 @@ import (
 	"mameuri-graphql-server/graph/generated"
 	"mameuri-graphql-server/graph/model"
 	"math/rand"
-	"strconv"
 )
 
 // CreateTodo is the resolver for the createTodo field.
@@ -26,9 +25,13 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) 
 
 // CreateBusinessUser is the resolver for the createBusinessUser field.
 func (r *mutationResolver) CreateBusinessUser(ctx context.Context, input model.NewBusinessUsers) (*model.BusinessUser, error) {
-	s := strconv.Itoa(len(r.businessUsers) + 1)
+	cmd := "INSERT INTO business_users (email, password) VALUES ($1, $2)"
+	_, err := r.DB.Exec(cmd, input.Email, input.Password)
+	if err != nil {
+		return nil, err
+	}
 	businessUser := &model.BusinessUser{
-		ID:       s,
+		ID:       fmt.Sprintf("T%d", rand.Int()),
 		Email:    input.Email,
 		Password: input.Password,
 	}

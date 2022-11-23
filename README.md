@@ -10,3 +10,17 @@ go run server.go
   ```
   go run github.com/99designs/gqlgen generate
   ```
+
+# How to setup DB
+- Connect
+  ```
+  psql -d mameuri_dev -U postgres;
+  ```
+- Create Database
+  ```
+  CREATE DATABASE mameuri_dev;
+  ```
+- Create Table
+  ```
+  CREATE TABLE business_users (id serial PRIMARY KEY, email VARCHAR(50), password VARCHAR(50));
+  ```
