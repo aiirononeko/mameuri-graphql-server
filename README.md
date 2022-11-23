@@ -22,5 +22,5 @@ go run server.go
   ```
 - Create Table
   ```
-  CREATE TABLE business_users (id serial PRIMARY KEY, email VARCHAR(50), password VARCHAR(50));
+  CREATE TABLE business_users (id serial PRIMARY KEY, email VARCHAR(50) NOT NULL UNIQUE, password VARCHAR(50) NOT NULL);
   ```

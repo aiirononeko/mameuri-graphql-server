@@ -9,6 +9,8 @@ import (
 	"mameuri-graphql-server/graph/generated"
 	"mameuri-graphql-server/graph/model"
 	"math/rand"
+	"regexp"
+	"strconv"
 )
 
 // CreateTodo is the resolver for the createTodo field.
@@ -23,15 +25,47 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) 
 	return todo, nil
 }
 
+func MatchPasswordString(password string) bool {
+
+	// Must be equal or longer than 8 charactors
+	if len(password) < 8 {
+		return false
+	}
+	// Must contain at least each one uppercase, lowercase and number
+	reg := []*regexp.Regexp{
+		regexp.MustCompile(`[a-z]`), regexp.MustCompile(`[A-Z]`),
+		regexp.MustCompile(`\d`),
+	}
+	for _, r := range reg {
+		if r.FindString(password) == "" {
+			return false
+		}
+	}
+	return true
+}
+
 // CreateBusinessUser is the resolver for the createBusinessUser field.
 func (r *mutationResolver) CreateBusinessUser(ctx context.Context, input model.NewBusinessUsers) (*model.BusinessUser, error) {
-	cmd := "INSERT INTO business_users (email, password) VALUES ($1, $2)"
-	_, err := r.DB.Exec(cmd, input.Email, input.Password)
+
+	// Validate - email
+	emailRegexp := regexp.MustCompile(`^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$`)
+	if !emailRegexp.MatchString(input.Email) {
+		return nil, fmt.Errorf("Error: %s", "email validation error")
+	}
+
+	// Validate - password
+	if !MatchPasswordString(input.Password) {
+		return nil, fmt.Errorf("Error: %s", "password validation error")
+	}
+
+	cmd := "INSERT INTO business_users (email, password) VALUES ($1, $2) RETURNING id"
+	lastInsertId := 0
+	err := r.DB.QueryRow(cmd, input.Email, input.Password).Scan(&lastInsertId)
 	if err != nil {
 		return nil, err
 	}
 	businessUser := &model.BusinessUser{
-		ID:       fmt.Sprintf("T%d", rand.Int()),
+		ID:       strconv.Itoa(lastInsertId),
 		Email:    input.Email,
 		Password: input.Password,
 	}
