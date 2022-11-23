@@ -14,6 +14,5 @@ import (
 
 type Resolver struct {
 	DB            *sql.DB
-	todos         []*model.Todo
 	businessUsers []*model.BusinessUser
 }
