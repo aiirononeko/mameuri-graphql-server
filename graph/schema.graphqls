@@ -1,7 +1,3 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
-
 type BusinessUser {
   id: ID!
   email: String!
@@ -36,11 +32,32 @@ input newBusinessUsers {
   password: String!
 }
 
+input updateBusinessUsers {
+  id: ID!
+  password: String!
+}
+
+input deleteBusinessUsers {
+  id: ID!
+}
+
 input newBusinessInfo {
   user_id: ID!
   name: String!
   description: String
   product_ids: [ID]
+}
+
+input updateBusinessInfo {
+  id: ID!
+  name: String
+  description: String
+  address: String
+  product_ids: [ID]
+}
+
+input deleteBusinessInfo {
+  id: ID!
 }
 
 input newProducts {
@@ -50,8 +67,25 @@ input newProducts {
   price: Int!
 }
 
+input updateProducts {
+  id: ID!
+  name: String
+  description: String
+  price: Int
+}
+
+input deleteProducts {
+  id: ID!
+}
+
 type Mutation {
   createBusinessUser(input: newBusinessUsers!): BusinessUser!
+  updateBusinessUser(input: updateBusinessUsers!): BusinessUser!
+  deleteBusinessUser(input: deleteBusinessUsers!): BusinessUser!
   createBusinessInfo(input: newBusinessInfo!): BusinessInfo!
-  createProducts(input: newProducts!): Product!
+  updateBusinessInfo(input: updateBusinessInfo!): BusinessInfo!
+  deleteBusinessInfo(input: deleteBusinessInfo!): BusinessInfo!
+  createProduct(input: newProducts!): Product!
+  updateProduct(input: updateProducts!): Product!
+  deleteProduct(input: deleteProducts!): Product!
 }

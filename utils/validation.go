@@ -2,6 +2,16 @@ package utils
 
 import "regexp"
 
+func ValidateEmailString(email string) bool {
+
+	// Validate - email
+	emailRegexp := regexp.MustCompile(`^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$`)
+	if !emailRegexp.MatchString(email) {
+		return false
+	}
+	return true
+}
+
 func MatchPasswordString(password string) bool {
 
 	// Must be equal or longer than 8 charactors

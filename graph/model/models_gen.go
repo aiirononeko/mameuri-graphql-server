@@ -25,6 +25,18 @@ type Product struct {
 	Price       int    `json:"price"`
 }
 
+type DeleteBusinessInfo struct {
+	ID string `json:"id"`
+}
+
+type DeleteBusinessUsers struct {
+	ID string `json:"id"`
+}
+
+type DeleteProducts struct {
+	ID string `json:"id"`
+}
+
 type NewBusinessInfo struct {
 	UserID      string    `json:"user_id"`
 	Name        string    `json:"name"`
@@ -42,4 +54,24 @@ type NewProducts struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Price       int    `json:"price"`
+}
+
+type UpdateBusinessInfo struct {
+	ID          string    `json:"id"`
+	Name        *string   `json:"name"`
+	Description *string   `json:"description"`
+	Address     *string   `json:"address"`
+	ProductIds  []*string `json:"product_ids"`
+}
+
+type UpdateBusinessUsers struct {
+	ID       string `json:"id"`
+	Password string `json:"password"`
+}
+
+type UpdateProducts struct {
+	ID          string  `json:"id"`
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+	Price       *int    `json:"price"`
 }

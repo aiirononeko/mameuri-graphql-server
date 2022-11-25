@@ -8,8 +8,14 @@ go run server.go
 1. Modify shema.graphqls file
 2. execute command below
   ```
-  go run github.com/99designs/gqlgen generate
+  go run github.com/99designs/gqlgen
   ```
+
+# If library throws unkown exceptions
+1. Buck up my code(resolver.go, schema.graphql, schema.resolver.go, server.go, etc..)
+2. Delete my code
+3. ReGenerate
+https://gqlgen.com/getting-started/
 
 # How to setup DB
 - Connect

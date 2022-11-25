@@ -9,15 +9,13 @@ import (
 	"mameuri-graphql-server/graph/generated"
 	"mameuri-graphql-server/graph/model"
 	"mameuri-graphql-server/utils"
-	"regexp"
 	"strconv"
 )
 
 // CreateBusinessUser is the resolver for the createBusinessUser field.
 func (r *mutationResolver) CreateBusinessUser(ctx context.Context, input model.NewBusinessUsers) (*model.BusinessUser, error) {
 	// Validate - email
-	emailRegexp := regexp.MustCompile(`^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$`)
-	if !emailRegexp.MatchString(input.Email) {
+	if !utils.ValidateEmailString(input.Email) {
 		return nil, fmt.Errorf("Error: %s", "email validation error")
 	}
 
@@ -39,6 +37,35 @@ func (r *mutationResolver) CreateBusinessUser(ctx context.Context, input model.N
 	}
 	r.businessUsers = append(r.businessUsers, businessUser)
 	return businessUser, nil
+}
+
+// UpdateBusinessUser is the resolver for the updateBusinessUser field.
+func (r *mutationResolver) UpdateBusinessUser(ctx context.Context, input model.UpdateBusinessUsers) (*model.BusinessUser, error) {
+	// Validate - password
+	if !utils.MatchPasswordString(input.Password) {
+		return nil, fmt.Errorf("Error: %s", "password validation error")
+	}
+
+	// TODO USE ORM MAPPER!!!!!!!!!!!!!
+	cmd := "UPDATE business_users SET (password) = ($2) WHERE id = $1 RETURNING id, email, password"
+	updatedId := ""
+	updatedEmail := ""
+	updatedPassword := ""
+	err := r.DB.QueryRow(cmd, input.ID, input.Password).Scan(&updatedId, &updatedEmail, &updatedPassword)
+	if err != nil {
+		return nil, err
+	}
+	businessUser := &model.BusinessUser{
+		ID:       updatedId,
+		Email:    updatedEmail,
+		Password: updatedPassword,
+	}
+	return businessUser, nil
+}
+
+// DeleteBusinessUser is the resolver for the deleteBusinessUser field.
+func (r *mutationResolver) DeleteBusinessUser(ctx context.Context, input model.DeleteBusinessUsers) (*model.BusinessUser, error) {
+	panic(fmt.Errorf("not implemented: DeleteBusinessUser - deleteBusinessUser"))
 }
 
 // CreateBusinessInfo is the resolver for the createBusinessInfo field.
@@ -63,8 +90,18 @@ func (r *mutationResolver) CreateBusinessInfo(ctx context.Context, input model.N
 	return businessInfo, nil
 }
 
+// UpdateBusinessInfo is the resolver for the updateBusinessInfo field.
+func (r *mutationResolver) UpdateBusinessInfo(ctx context.Context, input model.UpdateBusinessInfo) (*model.BusinessInfo, error) {
+	panic(fmt.Errorf("not implemented: UpdateBusinessInfo - updateBusinessInfo"))
+}
+
+// DeleteBusinessInfo is the resolver for the deleteBusinessInfo field.
+func (r *mutationResolver) DeleteBusinessInfo(ctx context.Context, input model.DeleteBusinessInfo) (*model.BusinessInfo, error) {
+	panic(fmt.Errorf("not implemented: DeleteBusinessInfo - deleteBusinessInfo"))
+}
+
 // CreateProducts is the resolver for the createProducts field.
-func (r *mutationResolver) CreateProducts(ctx context.Context, input model.NewProducts) (*model.Product, error) {
+func (r *mutationResolver) CreateProduct(ctx context.Context, input model.NewProducts) (*model.Product, error) {
 	// Validate - name
 
 	// Validate - description
@@ -88,19 +125,29 @@ func (r *mutationResolver) CreateProducts(ctx context.Context, input model.NewPr
 	return product, nil
 }
 
+// UpdateProduct is the resolver for the updateProduct field.
+func (r *mutationResolver) UpdateProduct(ctx context.Context, input model.UpdateProducts) (*model.Product, error) {
+	panic(fmt.Errorf("not implemented: UpdateProduct - updateProduct"))
+}
+
+// DeleteProduct is the resolver for the deleteProduct field.
+func (r *mutationResolver) DeleteProduct(ctx context.Context, input model.DeleteProducts) (*model.Product, error) {
+	panic(fmt.Errorf("not implemented: DeleteProduct - deleteProduct"))
+}
+
 // BusinessUsers is the resolver for the businessUsers field.
 func (r *queryResolver) BusinessUsers(ctx context.Context) ([]*model.BusinessUser, error) {
-	return r.businessUsers, nil // TODO
+	panic(fmt.Errorf("not implemented: BusinessUsers - businessUsers"))
 }
 
 // BusinessInfo is the resolver for the businessInfo field.
 func (r *queryResolver) BusinessInfo(ctx context.Context) ([]*model.BusinessInfo, error) {
-	return r.businessInfo, nil // TODO
+	panic(fmt.Errorf("not implemented: BusinessInfo - businessInfo"))
 }
 
 // Products is the resolver for the products field.
 func (r *queryResolver) Products(ctx context.Context) ([]*model.Product, error) {
-	return r.products, nil // TODO
+	panic(fmt.Errorf("not implemented: Products - products"))
 }
 
 // Mutation returns generated.MutationResolver implementation.

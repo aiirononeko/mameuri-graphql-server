@@ -62,7 +62,13 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CreateBusinessInfo func(childComplexity int, input model.NewBusinessInfo) int
 		CreateBusinessUser func(childComplexity int, input model.NewBusinessUsers) int
-		CreateProducts     func(childComplexity int, input model.NewProducts) int
+		CreateProduct      func(childComplexity int, input model.NewProducts) int
+		DeleteBusinessInfo func(childComplexity int, input model.DeleteBusinessInfo) int
+		DeleteBusinessUser func(childComplexity int, input model.DeleteBusinessUsers) int
+		DeleteProduct      func(childComplexity int, input model.DeleteProducts) int
+		UpdateBusinessInfo func(childComplexity int, input model.UpdateBusinessInfo) int
+		UpdateBusinessUser func(childComplexity int, input model.UpdateBusinessUsers) int
+		UpdateProduct      func(childComplexity int, input model.UpdateProducts) int
 	}
 
 	Product struct {
@@ -82,8 +88,14 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateBusinessUser(ctx context.Context, input model.NewBusinessUsers) (*model.BusinessUser, error)
+	UpdateBusinessUser(ctx context.Context, input model.UpdateBusinessUsers) (*model.BusinessUser, error)
+	DeleteBusinessUser(ctx context.Context, input model.DeleteBusinessUsers) (*model.BusinessUser, error)
 	CreateBusinessInfo(ctx context.Context, input model.NewBusinessInfo) (*model.BusinessInfo, error)
-	CreateProducts(ctx context.Context, input model.NewProducts) (*model.Product, error)
+	UpdateBusinessInfo(ctx context.Context, input model.UpdateBusinessInfo) (*model.BusinessInfo, error)
+	DeleteBusinessInfo(ctx context.Context, input model.DeleteBusinessInfo) (*model.BusinessInfo, error)
+	CreateProduct(ctx context.Context, input model.NewProducts) (*model.Product, error)
+	UpdateProduct(ctx context.Context, input model.UpdateProducts) (*model.Product, error)
+	DeleteProduct(ctx context.Context, input model.DeleteProducts) (*model.Product, error)
 }
 type QueryResolver interface {
 	BusinessUsers(ctx context.Context) ([]*model.BusinessUser, error)
@@ -193,17 +205,89 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateBusinessUser(childComplexity, args["input"].(model.NewBusinessUsers)), true
 
-	case "Mutation.createProducts":
-		if e.complexity.Mutation.CreateProducts == nil {
+	case "Mutation.createProduct":
+		if e.complexity.Mutation.CreateProduct == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_createProducts_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_createProduct_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateProducts(childComplexity, args["input"].(model.NewProducts)), true
+		return e.complexity.Mutation.CreateProduct(childComplexity, args["input"].(model.NewProducts)), true
+
+	case "Mutation.deleteBusinessInfo":
+		if e.complexity.Mutation.DeleteBusinessInfo == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteBusinessInfo_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteBusinessInfo(childComplexity, args["input"].(model.DeleteBusinessInfo)), true
+
+	case "Mutation.deleteBusinessUser":
+		if e.complexity.Mutation.DeleteBusinessUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteBusinessUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteBusinessUser(childComplexity, args["input"].(model.DeleteBusinessUsers)), true
+
+	case "Mutation.deleteProduct":
+		if e.complexity.Mutation.DeleteProduct == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteProduct_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteProduct(childComplexity, args["input"].(model.DeleteProducts)), true
+
+	case "Mutation.updateBusinessInfo":
+		if e.complexity.Mutation.UpdateBusinessInfo == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateBusinessInfo_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateBusinessInfo(childComplexity, args["input"].(model.UpdateBusinessInfo)), true
+
+	case "Mutation.updateBusinessUser":
+		if e.complexity.Mutation.UpdateBusinessUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateBusinessUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateBusinessUser(childComplexity, args["input"].(model.UpdateBusinessUsers)), true
+
+	case "Mutation.updateProduct":
+		if e.complexity.Mutation.UpdateProduct == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateProduct_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateProduct(childComplexity, args["input"].(model.UpdateProducts)), true
 
 	case "Product.business_id":
 		if e.complexity.Product.BusinessID == nil {
@@ -269,9 +353,15 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputdeleteBusinessInfo,
+		ec.unmarshalInputdeleteBusinessUsers,
+		ec.unmarshalInputdeleteProducts,
 		ec.unmarshalInputnewBusinessInfo,
 		ec.unmarshalInputnewBusinessUsers,
 		ec.unmarshalInputnewProducts,
+		ec.unmarshalInputupdateBusinessInfo,
+		ec.unmarshalInputupdateBusinessUsers,
+		ec.unmarshalInputupdateProducts,
 	)
 	first := true
 
@@ -332,11 +422,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../schema.graphqls", Input: `# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
-
-type BusinessUser {
+	{Name: "../schema.graphqls", Input: `type BusinessUser {
   id: ID!
   email: String!
   password: String!
@@ -370,11 +456,32 @@ input newBusinessUsers {
   password: String!
 }
 
+input updateBusinessUsers {
+  id: ID!
+  password: String!
+}
+
+input deleteBusinessUsers {
+  id: ID!
+}
+
 input newBusinessInfo {
   user_id: ID!
   name: String!
   description: String
   product_ids: [ID]
+}
+
+input updateBusinessInfo {
+  id: ID!
+  name: String
+  description: String
+  address: String
+  product_ids: [ID]
+}
+
+input deleteBusinessInfo {
+  id: ID!
 }
 
 input newProducts {
@@ -384,10 +491,27 @@ input newProducts {
   price: Int!
 }
 
+input updateProducts {
+  id: ID!
+  name: String
+  description: String
+  price: Int
+}
+
+input deleteProducts {
+  id: ID!
+}
+
 type Mutation {
   createBusinessUser(input: newBusinessUsers!): BusinessUser!
+  updateBusinessUser(input: updateBusinessUsers!): BusinessUser!
+  deleteBusinessUser(input: deleteBusinessUsers!): BusinessUser!
   createBusinessInfo(input: newBusinessInfo!): BusinessInfo!
-  createProducts(input: newProducts!): Product!
+  updateBusinessInfo(input: updateBusinessInfo!): BusinessInfo!
+  deleteBusinessInfo(input: deleteBusinessInfo!): BusinessInfo!
+  createProduct(input: newProducts!): Product!
+  updateProduct(input: updateProducts!): Product!
+  deleteProduct(input: deleteProducts!): Product!
 }
 `, BuiltIn: false},
 }
@@ -427,13 +551,103 @@ func (ec *executionContext) field_Mutation_createBusinessUser_args(ctx context.C
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_createProducts_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_createProduct_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 model.NewProducts
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNnewProducts2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐNewProducts(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteBusinessInfo_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.DeleteBusinessInfo
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNdeleteBusinessInfo2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐDeleteBusinessInfo(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteBusinessUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.DeleteBusinessUsers
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNdeleteBusinessUsers2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐDeleteBusinessUsers(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteProduct_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.DeleteProducts
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNdeleteProducts2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐDeleteProducts(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateBusinessInfo_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.UpdateBusinessInfo
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNupdateBusinessInfo2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐUpdateBusinessInfo(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateBusinessUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.UpdateBusinessUsers
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNupdateBusinessUsers2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐUpdateBusinessUsers(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateProduct_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.UpdateProducts
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNupdateProducts2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐUpdateProducts(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -945,6 +1159,132 @@ func (ec *executionContext) fieldContext_Mutation_createBusinessUser(ctx context
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_updateBusinessUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateBusinessUser(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateBusinessUser(rctx, fc.Args["input"].(model.UpdateBusinessUsers))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.BusinessUser)
+	fc.Result = res
+	return ec.marshalNBusinessUser2ᚖmameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐBusinessUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateBusinessUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_BusinessUser_id(ctx, field)
+			case "email":
+				return ec.fieldContext_BusinessUser_email(ctx, field)
+			case "password":
+				return ec.fieldContext_BusinessUser_password(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BusinessUser", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateBusinessUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteBusinessUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteBusinessUser(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteBusinessUser(rctx, fc.Args["input"].(model.DeleteBusinessUsers))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.BusinessUser)
+	fc.Result = res
+	return ec.marshalNBusinessUser2ᚖmameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐBusinessUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteBusinessUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_BusinessUser_id(ctx, field)
+			case "email":
+				return ec.fieldContext_BusinessUser_email(ctx, field)
+			case "password":
+				return ec.fieldContext_BusinessUser_password(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BusinessUser", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteBusinessUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createBusinessInfo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createBusinessInfo(ctx, field)
 	if err != nil {
@@ -1014,8 +1354,8 @@ func (ec *executionContext) fieldContext_Mutation_createBusinessInfo(ctx context
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_createProducts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createProducts(ctx, field)
+func (ec *executionContext) _Mutation_updateBusinessInfo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateBusinessInfo(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1028,7 +1368,145 @@ func (ec *executionContext) _Mutation_createProducts(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateProducts(rctx, fc.Args["input"].(model.NewProducts))
+		return ec.resolvers.Mutation().UpdateBusinessInfo(rctx, fc.Args["input"].(model.UpdateBusinessInfo))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.BusinessInfo)
+	fc.Result = res
+	return ec.marshalNBusinessInfo2ᚖmameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐBusinessInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateBusinessInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_BusinessInfo_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_BusinessInfo_user_id(ctx, field)
+			case "name":
+				return ec.fieldContext_BusinessInfo_name(ctx, field)
+			case "description":
+				return ec.fieldContext_BusinessInfo_description(ctx, field)
+			case "address":
+				return ec.fieldContext_BusinessInfo_address(ctx, field)
+			case "product_ids":
+				return ec.fieldContext_BusinessInfo_product_ids(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BusinessInfo", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateBusinessInfo_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteBusinessInfo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteBusinessInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteBusinessInfo(rctx, fc.Args["input"].(model.DeleteBusinessInfo))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.BusinessInfo)
+	fc.Result = res
+	return ec.marshalNBusinessInfo2ᚖmameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐBusinessInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteBusinessInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_BusinessInfo_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_BusinessInfo_user_id(ctx, field)
+			case "name":
+				return ec.fieldContext_BusinessInfo_name(ctx, field)
+			case "description":
+				return ec.fieldContext_BusinessInfo_description(ctx, field)
+			case "address":
+				return ec.fieldContext_BusinessInfo_address(ctx, field)
+			case "product_ids":
+				return ec.fieldContext_BusinessInfo_product_ids(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BusinessInfo", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteBusinessInfo_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createProduct(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createProduct(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateProduct(rctx, fc.Args["input"].(model.NewProducts))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1045,7 +1523,7 @@ func (ec *executionContext) _Mutation_createProducts(ctx context.Context, field 
 	return ec.marshalNProduct2ᚖmameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐProduct(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_createProducts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_createProduct(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -1074,7 +1552,141 @@ func (ec *executionContext) fieldContext_Mutation_createProducts(ctx context.Con
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createProducts_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_createProduct_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateProduct(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateProduct(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateProduct(rctx, fc.Args["input"].(model.UpdateProducts))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Product)
+	fc.Result = res
+	return ec.marshalNProduct2ᚖmameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐProduct(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateProduct(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Product_id(ctx, field)
+			case "business_id":
+				return ec.fieldContext_Product_business_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Product_name(ctx, field)
+			case "description":
+				return ec.fieldContext_Product_description(ctx, field)
+			case "price":
+				return ec.fieldContext_Product_price(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Product", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateProduct_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteProduct(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteProduct(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteProduct(rctx, fc.Args["input"].(model.DeleteProducts))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Product)
+	fc.Result = res
+	return ec.marshalNProduct2ᚖmameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐProduct(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteProduct(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Product_id(ctx, field)
+			case "business_id":
+				return ec.fieldContext_Product_business_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Product_name(ctx, field)
+			case "description":
+				return ec.fieldContext_Product_description(ctx, field)
+			case "price":
+				return ec.fieldContext_Product_price(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Product", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteProduct_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3363,6 +3975,90 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputdeleteBusinessInfo(ctx context.Context, obj interface{}) (model.DeleteBusinessInfo, error) {
+	var it model.DeleteBusinessInfo
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputdeleteBusinessUsers(ctx context.Context, obj interface{}) (model.DeleteBusinessUsers, error) {
+	var it model.DeleteBusinessUsers
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputdeleteProducts(ctx context.Context, obj interface{}) (model.DeleteProducts, error) {
+	var it model.DeleteProducts
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputnewBusinessInfo(ctx context.Context, obj interface{}) (model.NewBusinessInfo, error) {
 	var it model.NewBusinessInfo
 	asMap := map[string]interface{}{}
@@ -3494,6 +4190,154 @@ func (ec *executionContext) unmarshalInputnewProducts(ctx context.Context, obj i
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price"))
 			it.Price, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputupdateBusinessInfo(ctx context.Context, obj interface{}) (model.UpdateBusinessInfo, error) {
+	var it model.UpdateBusinessInfo
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "name", "description", "address", "product_ids"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "address":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
+			it.Address, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "product_ids":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("product_ids"))
+			it.ProductIds, err = ec.unmarshalOID2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputupdateBusinessUsers(ctx context.Context, obj interface{}) (model.UpdateBusinessUsers, error) {
+	var it model.UpdateBusinessUsers
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "password"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "password":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			it.Password, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputupdateProducts(ctx context.Context, obj interface{}) (model.UpdateProducts, error) {
+	var it model.UpdateProducts
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "name", "description", "price"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "price":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price"))
+			it.Price, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3635,6 +4479,24 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updateBusinessUser":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateBusinessUser(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteBusinessUser":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteBusinessUser(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createBusinessInfo":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -3644,10 +4506,46 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "createProducts":
+		case "updateBusinessInfo":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createProducts(ctx, field)
+				return ec._Mutation_updateBusinessInfo(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteBusinessInfo":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteBusinessInfo(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createProduct":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createProduct(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateProduct":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateProduct(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteProduct":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteProduct(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -4542,6 +5440,21 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) unmarshalNdeleteBusinessInfo2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐDeleteBusinessInfo(ctx context.Context, v interface{}) (model.DeleteBusinessInfo, error) {
+	res, err := ec.unmarshalInputdeleteBusinessInfo(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNdeleteBusinessUsers2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐDeleteBusinessUsers(ctx context.Context, v interface{}) (model.DeleteBusinessUsers, error) {
+	res, err := ec.unmarshalInputdeleteBusinessUsers(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNdeleteProducts2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐDeleteProducts(ctx context.Context, v interface{}) (model.DeleteProducts, error) {
+	res, err := ec.unmarshalInputdeleteProducts(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNnewBusinessInfo2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐNewBusinessInfo(ctx context.Context, v interface{}) (model.NewBusinessInfo, error) {
 	res, err := ec.unmarshalInputnewBusinessInfo(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4554,6 +5467,21 @@ func (ec *executionContext) unmarshalNnewBusinessUsers2mameuriᚑgraphqlᚑserve
 
 func (ec *executionContext) unmarshalNnewProducts2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐNewProducts(ctx context.Context, v interface{}) (model.NewProducts, error) {
 	res, err := ec.unmarshalInputnewProducts(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNupdateBusinessInfo2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐUpdateBusinessInfo(ctx context.Context, v interface{}) (model.UpdateBusinessInfo, error) {
+	res, err := ec.unmarshalInputupdateBusinessInfo(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNupdateBusinessUsers2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐUpdateBusinessUsers(ctx context.Context, v interface{}) (model.UpdateBusinessUsers, error) {
+	res, err := ec.unmarshalInputupdateBusinessUsers(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNupdateProducts2mameuriᚑgraphqlᚑserverᚋgraphᚋmodelᚐUpdateProducts(ctx context.Context, v interface{}) (model.UpdateProducts, error) {
+	res, err := ec.unmarshalInputupdateProducts(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -4675,6 +5603,22 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 		return graphql.Null
 	}
 	res := graphql.MarshalID(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalInt(*v)
 	return res
 }
 
