@@ -15,4 +15,6 @@ import (
 type Resolver struct {
 	DB            *sql.DB
 	businessUsers []*model.BusinessUser
+	businessInfo  []*model.BusinessInfo
+	products      []*model.Product
 }

@@ -2,18 +2,44 @@
 
 package model
 
+type BusinessInfo struct {
+	ID          string    `json:"id"`
+	UserID      string    `json:"user_id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
+	Address     *string   `json:"address"`
+	ProductIds  []*string `json:"product_ids"`
+}
+
 type BusinessUser struct {
 	ID       string `json:"id"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+type Product struct {
+	ID          string `json:"id"`
+	BusinessID  string `json:"business_id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Price       int    `json:"price"`
+}
+
+type NewBusinessInfo struct {
+	UserID      string    `json:"user_id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
+	ProductIds  []*string `json:"product_ids"`
 }
 
 type NewBusinessUsers struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type NewProducts struct {
+	BusinessID  string `json:"business_id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Price       int    `json:"price"`
 }

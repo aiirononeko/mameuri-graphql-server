@@ -2,13 +2,33 @@
 #
 # https://gqlgen.com/getting-started/
 
-type User {
+type BusinessUser {
   id: ID!
+  email: String!
+  password: String!
+}
+
+type BusinessInfo {
+  id: ID!
+  user_id: ID!
   name: String!
+  description: String
+  address: String
+  product_ids: [ID]
+}
+
+type Product {
+  id: ID!
+  business_id: ID!
+  name: String!
+  description: String!
+  price: Int!
 }
 
 type Query {
   businessUsers: [BusinessUser!]!
+  businessInfo: [BusinessInfo!]
+  products: [Product!]
 }
 
 input newBusinessUsers {
@@ -16,12 +36,22 @@ input newBusinessUsers {
   password: String!
 }
 
-type Mutation {
-  createBusinessUser(input: newBusinessUsers!): BusinessUser!
+input newBusinessInfo {
+  user_id: ID!
+  name: String!
+  description: String
+  product_ids: [ID]
 }
 
-type BusinessUser {
-  id: ID!
-  email: String!
-  password: String!
+input newProducts {
+  business_id: ID!
+  name: String!
+  description: String!
+  price: Int!
+}
+
+type Mutation {
+  createBusinessUser(input: newBusinessUsers!): BusinessUser!
+  createBusinessInfo(input: newBusinessInfo!): BusinessInfo!
+  createProducts(input: newProducts!): Product!
 }

@@ -8,32 +8,13 @@ import (
 	"fmt"
 	"mameuri-graphql-server/graph/generated"
 	"mameuri-graphql-server/graph/model"
+	"mameuri-graphql-server/utils"
 	"regexp"
 	"strconv"
 )
 
-func MatchPasswordString(password string) bool {
-
-	// Must be equal or longer than 8 charactors
-	if len(password) < 8 {
-		return false
-	}
-	// Must contain at least each one uppercase, lowercase and number
-	reg := []*regexp.Regexp{
-		regexp.MustCompile(`[a-z]`), regexp.MustCompile(`[A-Z]`),
-		regexp.MustCompile(`\d`),
-	}
-	for _, r := range reg {
-		if r.FindString(password) == "" {
-			return false
-		}
-	}
-	return true
-}
-
 // CreateBusinessUser is the resolver for the createBusinessUser field.
 func (r *mutationResolver) CreateBusinessUser(ctx context.Context, input model.NewBusinessUsers) (*model.BusinessUser, error) {
-
 	// Validate - email
 	emailRegexp := regexp.MustCompile(`^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$`)
 	if !emailRegexp.MatchString(input.Email) {
@@ -41,7 +22,7 @@ func (r *mutationResolver) CreateBusinessUser(ctx context.Context, input model.N
 	}
 
 	// Validate - password
-	if !MatchPasswordString(input.Password) {
+	if !utils.MatchPasswordString(input.Password) {
 		return nil, fmt.Errorf("Error: %s", "password validation error")
 	}
 
@@ -60,9 +41,66 @@ func (r *mutationResolver) CreateBusinessUser(ctx context.Context, input model.N
 	return businessUser, nil
 }
 
+// CreateBusinessInfo is the resolver for the createBusinessInfo field.
+func (r *mutationResolver) CreateBusinessInfo(ctx context.Context, input model.NewBusinessInfo) (*model.BusinessInfo, error) {
+	// Validate - name
+
+	// Validate - description
+
+	cmd := "INSERT INTO business_info (user_id, name, description, address) VALUES ($1, $2, $3) RETURNING id"
+	lastInsertId := 0
+	err := r.DB.QueryRow(cmd, input.UserID, input.Name, input.Description).Scan(&lastInsertId)
+	if err != nil {
+		return nil, err
+	}
+	businessInfo := &model.BusinessInfo{
+		ID:          strconv.Itoa(lastInsertId),
+		UserID:      input.UserID,
+		Name:        input.Name,
+		Description: input.Description,
+	}
+	r.businessInfo = append(r.businessInfo, businessInfo)
+	return businessInfo, nil
+}
+
+// CreateProducts is the resolver for the createProducts field.
+func (r *mutationResolver) CreateProducts(ctx context.Context, input model.NewProducts) (*model.Product, error) {
+	// Validate - name
+
+	// Validate - description
+
+	// Validate - price
+
+	cmd := "INSERT INTO products (business_id, name, description, price) VALUES ($1, $2, $3, $4) RETURNING id"
+	lastInsertId := 0
+	err := r.DB.QueryRow(cmd, input.BusinessID, input.Name, input.Description, input.Price).Scan(&lastInsertId)
+	if err != nil {
+		return nil, err
+	}
+	product := &model.Product{
+		ID:          strconv.Itoa(lastInsertId),
+		BusinessID:  input.BusinessID,
+		Name:        input.Name,
+		Description: input.Description,
+		Price:       input.Price,
+	}
+	r.products = append(r.products, product)
+	return product, nil
+}
+
 // BusinessUsers is the resolver for the businessUsers field.
 func (r *queryResolver) BusinessUsers(ctx context.Context) ([]*model.BusinessUser, error) {
-	return r.businessUsers, nil
+	return r.businessUsers, nil // TODO
+}
+
+// BusinessInfo is the resolver for the businessInfo field.
+func (r *queryResolver) BusinessInfo(ctx context.Context) ([]*model.BusinessInfo, error) {
+	return r.businessInfo, nil // TODO
+}
+
+// Products is the resolver for the products field.
+func (r *queryResolver) Products(ctx context.Context) ([]*model.Product, error) {
+	return r.products, nil // TODO
 }
 
 // Mutation returns generated.MutationResolver implementation.
