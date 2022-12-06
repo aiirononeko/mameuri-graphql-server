@@ -1,14 +1,16 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"mameuri-graphql-server/graph"
 	"mameuri-graphql-server/graph/generated"
+	"mameuri-graphql-server/graph/model"
 	"net/http"
 	"os"
 
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	_ "github.com/lib/pq"
@@ -35,16 +37,18 @@ func main() {
 		port = DEFAULT_PORT
 	}
 
-	// Initialize connection string.
 	var connectionString string = fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", HOST, USER, PASSWORD, DATABASE)
 
 	// Initialize connection object.
-	db, err := sql.Open("postgres", connectionString)
-	checkError(err)
+	db, err := gorm.Open(postgres.Open(connectionString), &gorm.Config{})
+	if err != nil {
+		panic("faild to connect database")
+	}
 
-	err = db.Ping()
-	checkError(err)
-	fmt.Println("Successfully created connection to database")
+	err = db.AutoMigrate(&model.BusinessUser{}, &model.BusinessInfo{}, &model.Product{})
+	if err != nil {
+		panic("")
+	}
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{DB: db}}))
 

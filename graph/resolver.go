@@ -1,11 +1,9 @@
 package graph
 
 import (
-	"database/sql"
-
 	"mameuri-graphql-server/graph/model"
 
-	_ "github.com/lib/pq"
+	"gorm.io/gorm"
 )
 
 // This file will not be regenerated automatically.
@@ -13,7 +11,7 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	DB            *sql.DB
+	DB            *gorm.DB
 	businessUsers []*model.BusinessUser
 	businessInfo  []*model.BusinessInfo
 	products      []*model.Product

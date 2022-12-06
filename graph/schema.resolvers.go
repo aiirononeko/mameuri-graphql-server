@@ -24,19 +24,16 @@ func (r *mutationResolver) CreateBusinessUser(ctx context.Context, input model.N
 		return nil, fmt.Errorf("Error: %s", "password validation error")
 	}
 
-	cmd := "INSERT INTO business_users (email, password) VALUES ($1, $2) RETURNING id"
-	lastInsertId := 0
-	err := r.DB.QueryRow(cmd, input.Email, input.Password).Scan(&lastInsertId)
-	if err != nil {
-		return nil, err
-	}
-	businessUser := &model.BusinessUser{
-		ID:       strconv.Itoa(lastInsertId),
-		Email:    input.Email,
+	record := model.BusinessUser{
+		Email: input.Email,
 		Password: input.Password,
 	}
-	r.businessUsers = append(r.businessUsers, businessUser)
-	return businessUser, nil
+	if err := r.DB.Create(&record).Error; err != nil {
+		return nil, err
+	}
+
+	res := model.NewBusinessUsers(&record)
+	return res, nil
 }
 
 // UpdateBusinessUser is the resolver for the updateBusinessUser field.
